@@ -61,22 +61,7 @@ mta = Mtapi(
     expires_seconds=app.config['CACHE_SECONDS'],
     threaded=app.config['THREADED'])
 
-def cross_origin(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        resp = f(*args, **kwargs)
-
-        if app.config['DEBUG']:
-            resp.headers['Access-Control-Allow-Origin'] = '*'
-        elif 'CROSS_ORIGIN' in app.config:
-            resp.headers['Access-Control-Allow-Origin'] = app.config['CROSS_ORIGIN']
-
-        return resp
-
-    return decorated_function
-
 @app.route('/')
-@cross_origin
 def index():
     return jsonify({
         'title': 'MTAPI',
@@ -84,7 +69,6 @@ def index():
         })
 
 @app.route('/by-location', methods=['GET'])
-@cross_origin
 def by_location():
     try:
         location = (float(request.args['lat']), float(request.args['lon']))
@@ -100,7 +84,6 @@ def by_location():
     return _make_envelope(data)
 
 @app.route('/by-route/<route>', methods=['GET'])
-@cross_origin
 def by_route(route):
     try:
         data = mta.get_by_route(route)
@@ -109,7 +92,6 @@ def by_route(route):
         abort(404)
 
 @app.route('/by-id/<id_string>', methods=['GET'])
-@cross_origin
 def by_index(id_string):
     ids = id_string.split(',')
     try:
@@ -119,7 +101,6 @@ def by_index(id_string):
         abort(404)
 
 @app.route('/routes', methods=['GET'])
-@cross_origin
 def routes():
     return jsonify({
         'data': sorted(mta.get_routes()),
